@@ -42,8 +42,15 @@ namespace sysfspwm
   
   void PWM::read_current_values(void)
   {
-    period_ = std::chrono::nanoseconds(std::stoi(udevice_.get_sysattr("period")));
-    duty_ = std::chrono::nanoseconds(std::stoi(udevice_.get_sysattr("duty_cycle")));
+    try
+    {
+      period_ = std::chrono::nanoseconds(std::stoi(udevice_.get_sysattr("period")));
+      duty_ = std::chrono::nanoseconds(std::stoi(udevice_.get_sysattr("duty_cycle")));
+    }
+    catch (std::exception e)
+    {
+      throw PWMInterfaceException();
+    }
   }
   
   std::string PWM::get_name(void)
@@ -55,10 +62,15 @@ namespace sysfspwm
   std::chrono::nanoseconds PWM::get_period(void)
   {
     int period = 1;
-    if (udevice_.has_sysattr("period"))
+    try
     {
       period = std::stoi(udevice_.get_sysattr("period"));
     }
+    catch (std::exception e)
+    {
+      throw PWMInterfaceException();
+    }
+    
     period_ = std::chrono::nanoseconds(period);
     return period_;
   }
@@ -73,17 +85,31 @@ namespace sysfspwm
     {
       set_duty_cycle(period_ - std::chrono::nanoseconds(1));
     }
-    udevice_.set_sysattr("period", std::to_string(period_.count()));
+    
+    try
+    {
+      udevice_.set_sysattr("period", std::to_string(period_.count()));
+    }
+    catch (std::exception e)
+    {
+      throw PWMArgumentException(*this, "period");
+    }
     
   }
   
   std::chrono::nanoseconds PWM::get_duty_cycle(void)
   {
     int duty = 1;
-    if (udevice_.has_sysattr("duty_cycle"))
+ 
+    try
     {
       duty = std::stoi(udevice_.get_sysattr("duty_cycle"));
     }
+    catch (std::exception e)
+    {
+      throw PWMInterfaceException();
+    }
+    
     duty_ = std::chrono::nanoseconds(duty);
     return duty_;
   }
@@ -99,41 +125,68 @@ namespace sysfspwm
     {
       set_period(duty_+std::chrono::nanoseconds(1));
     }
-    udevice_.set_sysattr("duty_cycle", std::to_string(duty_.count()));
-    
+    try
+    {
+      udevice_.set_sysattr("duty_cycle", std::to_string(duty_.count()));
+    }
+    catch (std::exception e)
+    {
+      throw PWMArgumentException(*this, "duty_cycle");
+    }
   }
   
   bool PWM::is_enabled(void)
   {
     bool enabled = false;
-    if (udevice_.has_sysattr("enable"))
+    try
     {
       enabled = std::stoi(udevice_.get_sysattr("enable"));
+    }
+    catch (std::exception e)
+    {
+      throw PWMInterfaceException();
     }
     return enabled;
   }
   
   void  PWM::set_enabled(bool enabled)
   {
-    //udevice_.set_sysattr("period", std::to_string(period_.count()));
-    //udevice_.set_sysattr("duty_cycle", std::to_string(duty_.count()));
-    udevice_.set_sysattr("enable", std::to_string((int) enabled));
+    try
+    {
+      udevice_.set_sysattr("enable", std::to_string((int) enabled));
+    }
+    catch (std::exception e)
+    {
+      throw PWMArgumentException(*this, "enable");
+    }
   }
   
   
   bool PWM::is_inverted(void)
   {
     bool inverted = false;
-    if (udevice_.has_sysattr("polarity"))
+    try
     {
       inverted = udevice_.get_sysattr("polarity") != "normal";
+    }
+    catch (std::exception e)
+    {
+      throw PWMInterfaceException();
     }
     return inverted;
   }
   
   void  PWM::set_inverted(bool inverted)
   {
-    udevice_.set_sysattr("polarity", inverted ? "inversed" : "normal");
+    try
+    {
+      udevice_.set_sysattr("polarity", inverted ? "inversed" : "normal");
+    }
+    catch (std::exception e)
+    {
+      throw PWMArgumentException(*this, "polarity");
+    }
+    
   }
   
   void PWM::set_frequency_and_ratio(long frequency, float ratio)

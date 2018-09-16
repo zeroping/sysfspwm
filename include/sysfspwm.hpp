@@ -3,6 +3,7 @@
 #include <udevpp.hpp>
 #include <vector>
 #include <chrono>
+#include <exception>
 
 namespace sysfspwm
 {
@@ -122,5 +123,30 @@ namespace sysfspwm
      */
     void read_current_values(void);
   };
+  
+  class PWMArgumentException : public std::exception
+  {
+    PWM& pwm_;
+    std::string attr_;
+  public:
+    PWMArgumentException(PWM& pwm, std::string attr) : pwm_(pwm), attr_(attr)
+    { }
+    const char * what () const throw ()
+    {
+      return ("bad PWM argument exception on PWM located at " + pwm_.udevice_.get_syspath() + " while setting " + attr_).c_str() ;
+    }
+  };
+  
+  class PWMInterfaceException : public std::exception
+  {
+  public:
+    PWMInterfaceException()
+    { }
+    const char * what () const throw ()
+    {
+      return ("A sysfs PWM device didn't conform to the expected interface") ;
+    }
+  };
+  
   
 }

@@ -1,4 +1,4 @@
-# Sysfsled Library
+# Sysfspwm Library
 A C++ library for the Linux kernel's PWM device class.
 
 ## What It's For
